@@ -1,178 +1,383 @@
 import { useRouter } from 'expo-router';
 import { Formik } from 'formik';
-import { Image, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View , Alert } from 'react-native';
+import { 
+  Image, 
+  ScrollView, 
+  StatusBar, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  View, 
+  Alert,
+  StyleSheet,
+  ActivityIndicator
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from 'react';
 import logo from "../../assets/images/dinetimelogo.png";
 import validationSchema from '../../utils/authSchema';
+import { signInWithEmailAndPassword, getAuth } from 'firebase/auth';
+import { doc, getDoc, getFirestore } from "firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const entryImg = require("../../assets/images/Frame.png");
-import { signInWithEmailAndPassword , getAuth } from 'firebase/auth';
-import {doc , getDoc , getFirestore} from "firebase/firestore";
-import AsyncStorage  from "@react-native-async-storage/async-storage";
+
+// Define colors as constants
+const COLORS = {
+  background: "#2b2b2b",
+  primary: "#f49b33",
+  white: "#ffffff",
+  black: "#000000",
+  error: "#ef4444",
+  inputBorder: "#cccccc",
+};
 
 const Signin = () => {
-    const router = useRouter();
-    const auth = getAuth();
-    const db = getFirestore();
+  const router = useRouter();
+  const auth = getAuth();
+  const db = getFirestore();
+  const [isLoading, setIsLoading] = useState(false);
 
- const handleSignin = async (values) => {
-
+  const handleSignin = async (values) => {
+    setIsLoading(true);
     try {
       const userCredentials = await signInWithEmailAndPassword(
-        auth,values.email,values.password
-      )
-      const user = userCredentials.user //userCredentials has got an object of user so userCredentials.user accesses the returned objects user property
+        auth, 
+        values.email, 
+        values.password
+      );
+      const user = userCredentials.user;
       
-     const userDoc =  await getDoc(doc(db,"users",user.uid));
-     
-     if(userDoc.exists()){
-      console.log("User data", userDoc.data());
-      await AsyncStorage.setItem("userEmail",values.email);
-      await AsyncStorage.setItem("isGuest" , "false");
-      router.push("/home");
-     }
-     else {
-      console.log("No any document!")
-     }
+      const userDoc = await getDoc(doc(db, "users", user.uid));
       
-      
-
-    } 
-    catch (error) {
-      console.log(error)
-
-      if(error.code === "auth/invalid-credential"){
+      if (userDoc.exists()) {
+        //console.log("User data", userDoc.data());
+        await AsyncStorage.setItem("userEmail", values.email);
+        await AsyncStorage.setItem("isGuest", "false");
+        router.push("/home");
+      } else {
         Alert.alert(
-          "Sign in Failed!",
-          "Incorrect password. Please Try again",
+          "Error",
+          "User data not found. Please contact support.",
           [{ text: "OK" }]
-              );
-          } 
-    
-  else {
-    Alert.alert(
-      "Sign in Error",
-      "An unexpected error occured.Please try again later!",
-      [{text : "OK"}]
+        );
+      }
+    } catch (error) {
+      console.log(error);
 
-        )
-      }  
+      if (error.code === "auth/invalid-credential") {
+        Alert.alert(
+          "Sign in Failed",
+          "Incorrect email or password. Please try again.",
+          [{ text: "OK" }]
+        );
+      } 
+      else if (error.code === "auth/user-not-found") {
+        Alert.alert(
+          "Sign in Failed",
+          "No account found with this email.",
+          [{ text: "OK" }]
+        );
+      } 
+      else if (error.code === "auth/wrong-password") {
+        Alert.alert(
+          "Sign in Failed",
+          "Incorrect password. Please try again.",
+          [{ text: "OK" }]
+        );
+      } 
+      else {
+        Alert.alert(
+          "Sign in Error",
+          "An unexpected error occurred. Please try again later.",
+          [{ text: "OK" }]
+        );
+      }
+    } 
+    finally {
+      setIsLoading(false);
     }
-  
   };
 
   const handleUserGuest = async () => {
-    AsyncStorage.setItem("isGuest", "true")
-    router.push("/home")
-  }
-
+    try {
+      await AsyncStorage.setItem("isGuest", "true");
+      router.push("/home");
+    } catch (error) {
+      console.error("Error setting guest mode:", error);
+    }
+  };
 
   return (
-    <SafeAreaView className={`bg-[#2b2b2b]`}>
-      <StatusBar barStyle={"light-content"} backgroundColor={"#2b2b2b"}/>
-       <ScrollView contentContainerStyle={{height: "100%"}}> 
-        <View className=" flex justify-center items-center">
-          <Image source={logo} style={{width:250 , height: 200}}/> 
-          <Text className="text-white text-lg text-center font-bold mb-10">Let's get started</Text>
-        
-          <View className="w-5/6">
-            <Formik initialValues={{email : "" , password : "" , username : ""}} 
-                    validationSchema={validationSchema} 
-                    onSubmit={handleSignin}>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor = {COLORS.background} />
+      <ScrollView 
+        contentContainerStyle = {styles.scrollContainer}
+        showsVerticalScrollIndicator = {false}
+      >
+        <View style = {styles.contentWrapper}>
+          {/* Logo */}
+          <Image 
+            source = {logo} 
+            style = {styles.logo}
+            resizeMode = "contain"
+          />
           
-              {({handleChange , handleBlur , handleSubmit , values , errors , touched}) => (
+          <Text style={styles.heading}>Let's get started</Text>
+        
+          <View style={styles.formContainer}>
+            <Formik 
+              initialValues={{ email: "", password: "" }} 
+              validationSchema={validationSchema} 
+              onSubmit={handleSignin}
+            >
+              {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+                <View style={styles.form}>
+                  {/* Email Input */}
+                  <Text style={styles.label}>Email</Text>
+                  <TextInput 
+                    style={[
+                      styles.input,
+                      touched.email && errors.email && styles.inputError
+                    ]}
+                    keyboardType="email-address" 
+                    onChangeText={handleChange("email")} 
+                    value={values.email} 
+                    onBlur={handleBlur("email")}
+                    placeholderTextColor="#999"
+                    placeholder="Enter your email"
+                    autoCapitalize="none"
+                    editable={!isLoading}
+                  />
+                  {touched.email && errors.email && (
+                    <Text style={styles.errorText}>{errors.email}</Text>
+                  )}
 
-             <View className = "w-full">
-              <Text className="text-[#f49b33] font-semibold mt-4 mb-2">Email</Text>
-             
-              <TextInput 
-                className=" h-11 border border-white text-white rounded px-3 mb-2"
-                keyboardType="email-address" 
-                onChangeText={handleChange("email")} 
-                value={values.email} 
-                onBlur = {handleBlur("email")}/>
-            
-                {touched.email && errors.email && (
-                <Text className = "text-red-500 text-xs mb-2">
-                  {errors.email}
-                </Text>
-                   )}
+                  {/* Password Input */}
+                  <Text style={styles.label}>Password</Text>
+                  <TextInput 
+                    style={[
+                      styles.input,
+                      touched.password && errors.password && styles.inputError
+                    ]}
+                    secureTextEntry
+                    onChangeText={handleChange("password")} 
+                    value={values.password} 
+                    onBlur={handleBlur("password")}
+                    placeholderTextColor="#999"
+                    placeholder="Enter your password"
+                    autoCapitalize="none"
+                    editable={!isLoading}
+                  />
+                  {touched.password && errors.password && (
+                    <Text style={styles.errorText}>{errors.password}</Text>
+                  )}
 
-             
-                 <Text className="text-[#f49b33] font-semibold mt-4 mb-2">Password</Text>
-             
-             <TextInput 
-             className=" h-11 border border-white text-white rounded px-3 mb-2"
-             secureTextEntry
-             onChangeText={handleChange("password")} 
-             value={values.password} 
-             onBlur = {handleBlur("password")}/>
-            
-              {touched.password && errors.password && (
-              <Text className = "text-red-500 text-xs mb-2">
-                 {errors.password}
-              </Text>
-                )}
-
-              <TouchableOpacity onPress={handleSubmit}
-                className="p-2 my-2 bg-[#f49b33] text-black rounded-lg mt-8">
-                <Text className="font-semibold text-center"> Sign in </Text>
-              </TouchableOpacity>
-             
-               </View>
-
-            
-               )}
+                  {/* Sign In Button */}
+                  <TouchableOpacity 
+                    onPress={handleSubmit}
+                    style={[styles.signInBtn, isLoading && styles.btnDisabled]}
+                    activeOpacity={0.8}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color={COLORS.black} />
+                    ) : (
+                      <Text style={styles.signInBtnText}>Sign in</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
             </Formik>
 
-            <View className="items-center mt-8">
-              <TouchableOpacity className="flex flex-row items-center" onPress={() => router.push("/signup")}>
-              <Text className="text-white font-semibold ">New user?  </Text>
-              <Text className="text-[#f49b33] font-semibold underline text-base">sign up</Text>
-            </TouchableOpacity>
+            {/* Sign Up Link */}
+            <View style={styles.signUpContainer}>
+              <TouchableOpacity 
+                style={styles.signUpRow} 
+                onPress={() => router.push("/signup")}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.signUpPrompt}>New user? </Text>
+                <Text style={styles.signUpLink}>sign up</Text>
+              </TouchableOpacity>
             </View>
-            <Text className="text-center text-base font-semibold my-6 text-white">
-              <View className="border-b-2 border-[#f49b33] p-1 mb-1 w-24"/> 
-              or {" "}             
-              <View className="border-b-2 border-[#f49b33] p-1 mb-1 w-24"/>
-            </Text>
-            <TouchableOpacity className="flex flex-row items-center justify-center" onPress={handleUserGuest}>
-              <Text className="text-white font-semibold ">Be a </Text>
-              <Text className="text-[#f49b33] font-semibold underline text-base">Guest user</Text>
+
+            {/* Divider */}
+            <View style={styles.dividerRow}>
+              <View style={styles.divider} />
+              <Text style={styles.dividerLabel}>or</Text>
+              <View style={styles.divider} />
+            </View>
+
+            {/* Guest User Link */}
+            <TouchableOpacity 
+              style={styles.guestRow} 
+              onPress={handleUserGuest}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.guestPrompt}>Be a </Text>
+              <Text style={styles.guestLink}>Guest user</Text>
             </TouchableOpacity>
           </View>   
         </View>
-           <View className="flex-1">
-          <Image source={entryImg} className="w-full h-full" resizeMode="contain"></Image>
+
+        {/* Illustration */}
+        <View style={styles.illustrationWrapper}>
+          <Image 
+            source={entryImg} 
+            style={styles.illustration} 
+            resizeMode="contain"
+          />
         </View>
       </ScrollView>      
     </SafeAreaView>
-  )
-}
+  );
+};
 
+export default Signin;
 
-export default Signin
-
-
-
-//handleChange(fieldName): updates the value of that field.
-
-// handleBlur(fieldName): marks the field as “touched.”
-
-// handleSubmit(): calls your onSubmit with current values.
-
-// values: current field values.
-
-// errors: current validation errors.
-
-// touched: which fields have been blurred/touched.
-
-
-
-// value={values.email}
-// Binds the current value from Formik state to the TextInput
-
-
-
-// onChangeText updates the state.
-
-// value reads the state back into the input.
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    paddingBottom: 40,
+    backgroundColor: COLORS.background,
+  },
+  contentWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logo: {
+    width: 250,
+    height: 200,
+    marginBottom: 10,
+  },
+  heading: {
+    color: COLORS.white,
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 30,
+  },
+  formContainer: {
+    width: "90%",
+    maxWidth: 400,
+  },
+  form: {
+    width: "100%",
+  },
+  label: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    fontSize: 15,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  input: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: COLORS.inputBorder,
+    color: COLORS.white,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    fontSize: 15,
+  },
+  inputError: {
+    borderColor: COLORS.error,
+  },
+  errorText: {
+    color: COLORS.error,
+    fontSize: 12,
+    marginBottom: 8,
+    marginTop: -4,
+  },
+  signInBtn: {
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    marginTop: 24,
+    minHeight: 48,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  btnDisabled: {
+    opacity: 0.6,
+  },
+  signInBtnText: {
+    fontWeight: "700",
+    fontSize: 16,
+    textAlign: "center",
+    color: COLORS.black,
+  },
+  signUpContainer: {
+    alignItems: "center",
+    marginTop: 24,
+  },
+  signUpRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  signUpPrompt: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 15,
+  },
+  signUpLink: {
+    color: COLORS.primary,
+    fontWeight: "700",
+    fontSize: 15,
+    textDecorationLine: "underline",
+  },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 24,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: COLORS.primary,
+    opacity: 0.6,
+  },
+  dividerLabel: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 14,
+    paddingHorizontal: 12,
+  },
+  guestRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  guestPrompt: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 15,
+  },
+  guestLink: {
+    color: COLORS.primary,
+    fontWeight: "700",
+    fontSize: 15,
+    textDecorationLine: "underline",
+  },
+  illustrationWrapper: {
+    flex: 1,
+    width: "100%",
+    minHeight: 200,
+    marginTop: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  illustration: {
+    width: "100%",
+    height: 200,
+  },
+});

@@ -39,6 +39,16 @@ const Signup = () => {
 
   const handleSignup = async (values) => {
     setIsLoading(true);
+
+    if(values.email === AsyncStorage.getItem("userEmail")){
+      Alert.alert(
+          "Signup Error",
+          "This email already exists! Please go to Sign in.",
+          [{ text: "OK" }]
+        );
+    }
+
+    else{
     try {
       const userCredentials = await createUserWithEmailAndPassword(
         auth, 
@@ -56,7 +66,8 @@ const Signup = () => {
       await AsyncStorage.setItem("userEmail", values.email);
       await AsyncStorage.setItem("isGuest", "false");
       router.push("/home");
-    } catch (error) {
+    } 
+    catch (error) {
       console.log(error);
 
       if (error.code === "auth/email-already-in-use") {
@@ -76,6 +87,9 @@ const Signup = () => {
       setIsLoading(false);
     }
   };
+  }
+
+
 
   const handleUserGuest = async () => {
     try {

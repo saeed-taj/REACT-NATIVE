@@ -139,7 +139,8 @@ export default function Restaurant () {
                                     i == currentIndex && {
                                      width: 12,
                                      height: 12,
-                                      }
+                                      
+                                    }
                                       ]}/>
                   ))
                 }

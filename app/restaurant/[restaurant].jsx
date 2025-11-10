@@ -521,14 +521,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   guestLabel: {
-    flex: 1,
+    flex : 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
   guestText: {
     color: '#ffffff',
-    marginLeft: 8,
-    fontSize: 16,
+    marginLeft : 8,
+    fontSize : 16,
   },
   slotsContainer: {
     flex: 1,

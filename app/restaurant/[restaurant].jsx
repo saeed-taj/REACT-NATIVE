@@ -25,7 +25,9 @@ export default function Restaurant () {
     const [selectedSlots , setSelectedSlots] = useState(null);
 
 
-    const handlePrevImage =() => {
+    
+    
+    /*const handlePrevImage =() => {
 
       const imagesLength = carouselImages[0]?.images.length;
 
@@ -38,10 +40,10 @@ export default function Restaurant () {
         // Go to last image
         const prevIndex = imagesLength - 1;
         setCurrentIndex(prevIndex);
-        flatListRef.current?.scrollToIndex({ index: prevIndex, animated: true });
+        flatListRef.current?.scrollToIndex({index: prevIndex, animated: true });
       }
     };
-
+*/
     const handleNextImage = () => {
       if (!carouselImages[0]?.images || carouselImages[0].images.length === 0){
     return; // nothing to scroll

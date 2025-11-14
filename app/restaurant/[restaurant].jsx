@@ -67,6 +67,7 @@ export default function Restaurant () {
 
     };*/
 
+    /*
     const handleScroll = (event) => {
       const contentOffset = event.nativeEvent.contentOffset;
       const viewSize = event.nativeEvent.layoutMeasurement;
@@ -77,7 +78,7 @@ export default function Restaurant () {
       }
     };
 
-
+*/
     const carouselItem = ({item}) => {
       return(
         

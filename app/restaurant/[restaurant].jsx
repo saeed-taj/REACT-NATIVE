@@ -43,7 +43,7 @@ export default function Restaurant () {
     };
 
     
-/*const handleNextImage = () => {
+const handleNextImage = () => {
       if (!carouselImages[0]?.images || carouselImages[0].images.length === 0){
     return; // nothing to scroll
   }
@@ -63,9 +63,9 @@ export default function Restaurant () {
     flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
   }
 
-    };*/
+    };
 
-    /*
+    
     const handleScroll = (event) => {
       const contentOffset = event.nativeEvent.contentOffset;
       const viewSize = event.nativeEvent.layoutMeasurement;
@@ -76,7 +76,7 @@ export default function Restaurant () {
       }
     };
 
-*/
+
     const carouselItem = ({item}) => {
       return(
         

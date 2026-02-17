@@ -1,4 +1,4 @@
-Restaurant Reservation App
+### Restaurant Reservation App
 A React Native application built with Expo that allows users to browse, select, and reserve time slots at various restaurants. Users can view restaurant details, check live locations, select timings via a calendar, manage reservations, and access their booking history. The app supports user authentication (sign up, sign in, guest mode) and integrates Firebase for data storage, including images and carousel displays.
 
 Features

@@ -1,31 +1,55 @@
-### Restaurant Reservation App
+## Restaurant Reservation App
 A React Native application built with Expo that allows users to browse, select, and reserve time slots at various restaurants. Users can view restaurant details, check live locations, select timings via a calendar, manage reservations, and access their booking history. The app supports user authentication (sign up, sign in, guest mode) and integrates Firebase for data storage, including images and carousel displays.
 
-Features
+### Features
 Restaurant Browsing: Scroll through a list of restaurants using FlatList for smooth performance.
+
 Restaurant Selection: View detailed information, including images and carousel galleries.
+
 Slot Selection: Choose available time slots for reservations.
+
 Live Location: View the real-time location of selected restaurants (using maps integration).
+
 Calendar Integration: Select reservation timings using a built-in calendar component.
+
 Booking History: Access and review past reservations.
+
 Refresh Functionality: Pull-to-refresh to update data in real-time.
+
 User Authentication:
+
 Sign up and sign in with email/password.
+
 Guest user option for browsing without an account.
+
 Secure logout functionality.
+
 Data Storage: Firebase integration for storing user data, restaurant details, images, and reservation history.
+
 Responsive UI: Optimized for both iOS and Android devices using React Native components like FlatList, Image, and Carousel.
+
 Technologies Used
+
 React Native: Framework for building native mobile apps.
+
 Expo: Toolchain for developing, building, and deploying React Native apps.
+
 Firebase: Backend-as-a-Service for authentication, database (Firestore), and storage (for images).
+
 React Navigation: For handling app navigation between screens.
+
 Other Libraries:
+
 react-native-image-carousel or similar for carousel images.
+
 react-native-calendars for calendar functionality.
+
 react-native-maps for live location display.
+
 react-native-flatlist (built-in) for lists.
-Prerequisites
+
+### Prerequisites
+
 Before running the app, ensure you have the following installed:
 
 Node.js (version 14 or higher)
@@ -82,8 +106,6 @@ Make a Reservation: Confirm your booking.
 View History: Access your reservation history from the menu.
 Refresh Data: Pull down to refresh lists and data.
 Logout: Sign out from the app settings.
-Screenshots
-(Add screenshots here if available. For example:)
 
 Home Screen:
 Restaurant Details:
